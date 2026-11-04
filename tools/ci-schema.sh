@@ -15,4 +15,5 @@ dump_ci --no-data --skip-add-drop-table vidya_schema > build/first-install.sql
 dump_ci --no-create-info --skip-add-locks --skip-disable-keys vidya_schema migrations admin_setup >> build/first-install.sql
 mysql_ci vidya_restore < build/first-install.sql
 php tools/ci-verify-schema.php > build/evidence/schema-restore.json
+python3 -c "import json; assert json.load(open('build/evidence/mysql-race.json'))['concurrentRegistration'] == 'pass'; assert json.load(open('build/evidence/schema-restore.json'))['schemaRestore'] == 'pass'"
 sha256sum build/first-install.sql > build/evidence/schema-sha256.txt

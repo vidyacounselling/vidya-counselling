@@ -4,6 +4,10 @@
 require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+set_exception_handler(function (Throwable $error): void {
+    fwrite(STDERR, 'CI concurrent setup verification failed.'.PHP_EOL);
+    exit(1);
+});
 if (getenv('GITHUB_ACTIONS') !== 'true' || getenv('DB_HOST') !== '127.0.0.1'
     || getenv('DB_DATABASE') !== 'vidya_race' || ! function_exists('pcntl_fork')) {
     throw new RuntimeException('Requires isolated CI MySQL race database and pcntl.');

@@ -4,6 +4,10 @@
 require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+set_exception_handler(function (Throwable $error): void {
+    fwrite(STDERR, 'CI schema verification failed: '.$error->getMessage().PHP_EOL);
+    exit(1);
+});
 if (getenv('GITHUB_ACTIONS') !== 'true' || getenv('DB_HOST') !== '127.0.0.1') {
     throw new RuntimeException('This verifier requires the isolated CI MySQL service.');
 }
@@ -33,6 +37,11 @@ foreach (['vidya_schema', 'vidya_restore'] as $database) {
     $snapshots[] = $snapshot;
 }
 if ($snapshots[0] !== $snapshots[1]) {
+    foreach ($snapshots[0] as $key => $value) {
+        if ($value !== ($snapshots[1][$key] ?? null)) {
+            fwrite(STDERR, json_encode(['different' => $key, 'migrated' => $value, 'restored' => $snapshots[1][$key] ?? null], JSON_PRETTY_PRINT).PHP_EOL);
+        }
+    }
     throw new RuntimeException('Imported SQL does not match migrated schema and migration bookkeeping.');
 }
 echo json_encode(['schemaRestore' => 'pass', 'engine' => 'InnoDB', 'users' => 0, 'setup' => 'unused', 'tables' => array_keys($snapshots[0])], JSON_PRETTY_PRINT);
