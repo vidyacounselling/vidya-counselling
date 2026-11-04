@@ -46,7 +46,6 @@ jobs:
       QUEUE_CONNECTION: sync
       MAIL_MAILER: array
       STAGING_PROTECTION: 'false'
-      MYSQL_CONTAINER: ${{ job.services.mysql.id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -87,6 +86,8 @@ jobs:
           python3 tools/ci-configure-mysql.py
           vendor/bin/phpunit -c build/phpunit.mysql.xml --log-junit build/evidence/mysql-tests.xml
       - name: Generate and restore-test first-install SQL
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         shell: bash
         run: bash tools/ci-schema.sh
       - name: Build production-dependency artifact from committed lock only
