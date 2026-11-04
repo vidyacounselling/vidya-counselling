@@ -161,6 +161,10 @@ class AdministratorAccessTest extends TestCase
     public function test_landing_has_no_admin_navigation_or_cookies(): void
     {
         $response = $this->get('/')->assertOk()->assertSee('Be heard.');
+        $response->assertSee('<header>', false)->assertSee('<main id="main">', false)
+            ->assertSee('"@context":"https://schema.org"', false)
+            ->assertDontSee('@__raw_block_', false)->assertDontSee('{{ asset(', false);
+        $this->assertSame(2, substr_count($response->getContent(), 'src="http://localhost/images/vidya-logo.png"'));
         $response->assertDontSee('href="/login"', false)->assertDontSee('href="/admin"', false);
         $this->assertSame([], $response->headers->getCookies());
     }
