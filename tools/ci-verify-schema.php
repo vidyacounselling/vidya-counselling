@@ -23,7 +23,16 @@ foreach (['vidya_schema', 'vidya_restore'] as $database) {
             throw new RuntimeException('Unexpected table or storage engine.');
         }
         $row = (array) $db->selectOne('SHOW CREATE TABLE `'.$table->name.'`');
-        $snapshot[$table->name] = $row['Create Table'];
+        // mysqldump makes inherited utf8mb4 column charsets explicit on restore.
+        // Compare effective column metadata as well as DDL; normalize only that
+        // redundant spelling when its matching utf8mb4 collation is present.
+        $snapshot[$table->name] = [
+            'ddl' => preg_replace('/ CHARACTER SET utf8mb4(?= COLLATE utf8mb4_)/', '', $row['Create Table']),
+            'columns' => json_encode($db->select(
+                'SELECT COLUMN_NAME, ORDINAL_POSITION, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA, CHARACTER_SET_NAME, COLLATION_NAME, GENERATION_EXPRESSION FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION',
+                [$database, $table->name],
+            )),
+        ];
     }
     if ($db->table('users')->count() !== 0 || $db->table('sessions')->count() !== 0
         || $db->table('cache')->count() !== 0 || $db->table('admin_setup')->count() !== 1) {
