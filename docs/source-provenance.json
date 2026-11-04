@@ -1,0 +1,7 @@
+{
+  "upstream": "https://github.com/laravel/laravel/tree/13.x",
+  "archive": "https://codeload.github.com/laravel/laravel/zip/refs/heads/13.x",
+  "downloadedOn": "2026-11-04",
+  "archiveSha256": "a68b8a16910eff022cc1e29f4d89eb4982de63195f9ed7168218d999e515c771",
+  "note": "Source-only download; no PHP, Composer, Node or Boost installed locally. Upstream AGENTS/CLAUDE/package/vite files not imported; user forbids local stack installation. composer.lock must be generated in verified remote environment."
+}

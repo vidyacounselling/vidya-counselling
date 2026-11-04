@@ -1,0 +1,1 @@
+<!DOCTYPE html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Please wait · Vidya</title><h1>Please wait a moment.</h1><p>Too many attempts. Please try again shortly.</p></html>
