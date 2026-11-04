@@ -2,7 +2,7 @@
 
 Laravel 13 साठी तयार केलेला Blade application source. Plain CSS आणि vanilla JavaScript; frontend build आवश्यक नाही.
 
-**स्थिती: source तयार; dependencies install, composer.lock, PHP tests आणि deployment बाकी. Live website बदललेली नाही.**
+**स्थिती: source आणि composer.lock तयार. PHP/Composer व database tests GitHub Actions मध्ये चालतात. Hostinger deployment झालेले नाही; live website बदललेली नाही. नवीनतम परिणाम [Actions](https://github.com/vidyacounselling/vidya-counselling/actions) मध्ये पहा.**
 
 - मूळ landing page: `resources/views/landing.blade.php`
 - Authentication व dashboard: `app/Http/Controllers/`, `resources/views/auth/`, `resources/views/admin/`
@@ -14,4 +14,4 @@ Laravel 13 साठी तयार केलेला Blade application source
 
 Existing PowerShell मधील lossless source check: `./tools/Verify-Landing.ps1`.
 
-Remote environment मिळाल्यावर Composer 2 वापरून dependencies resolve/install करा, `composer.lock` review करा, आणि isolated test environment मध्ये `php artisan test` चालवा. Live database वर tests चालवू नका.
+Remote environment मध्ये committed lock वापरून Composer 2 dependencies install करा आणि isolated test environment मध्ये `php artisan test` चालवा. Live database वर tests चालवू नका.
