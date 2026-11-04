@@ -1,0 +1,15 @@
+{
+  "separateHostedAssets": [],
+  "embeddedImages": 2,
+  "uniqueImages": 1,
+  "logoSha256": "41b0dc7fdbe503bfc2b67489d36dcf419289d7de6e20774af2822c7a53b68c38",
+  "font": "System Arial, Helvetica, Georgia, Times New Roman; no external fonts",
+  "favicon": "Original JavaScript derives favicon from the logo image",
+  "externalLinks": [
+    "https://maps.app.goo.gl/n5az4nX9wgc9NYG2A",
+    "https://www.instagram.com/vidya_counseling_center/",
+    "https://www.facebook.com/vidyacounselingcentre"
+  ],
+  "scripts": 2,
+  "styles": 1
+}
