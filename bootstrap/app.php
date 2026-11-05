@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/admin');
-        $middleware->alias(['admin' => \App\Http\Middleware\RequireAdmin::class]);
+        $middleware->alias(['admin' => \App\Http\Middleware\RequireAdmin::class, 'staff' => \App\Http\Middleware\RequireStaff::class]);
+        $middleware->validateCsrfTokens(except: ['register']);
         $middleware->web(append: [\App\Http\Middleware\ProtectStaging::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

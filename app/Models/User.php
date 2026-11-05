@@ -10,12 +10,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'bio', 'credentials'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes;
+
+    public function isAdministrator(): bool { return $this->role === 'administrator' && $this->active && ! $this->trashed(); }
+    public function isStaff(): bool { return $this->active && ! $this->trashed() && in_array($this->role, ['administrator','editor'], true); }
+    public function posts() { return $this->hasMany(Post::class, 'author_id'); }
 
     /**
      * Get the attributes that should be cast.
@@ -28,6 +32,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 }

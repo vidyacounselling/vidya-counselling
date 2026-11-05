@@ -10,7 +10,7 @@ class RequireAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->is_admin, 403);
+        abort_unless($request->user()?->isAdministrator(), 403);
         return $next($request);
     }
 }

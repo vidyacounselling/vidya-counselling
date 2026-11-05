@@ -18,10 +18,11 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:254'],
             'password' => ['required', 'string', 'max:128'],
         ]);
-        if (! Auth::attempt(['email' => mb_strtolower($data['email']), 'password' => $data['password'], 'is_admin' => true])) {
+        if (! Auth::attempt(['email' => mb_strtolower($data['email']), 'password' => $data['password'], 'active' => true, 'role' => ['administrator','editor']])) {
             throw ValidationException::withMessages(['email' => 'These credentials could not be verified.']);
         }
         $request->session()->regenerate();
+        $request->user()->forceFill(['last_login_at'=>now()])->save();
         return redirect()->route('admin');
     }
     public function logout(Request $request)

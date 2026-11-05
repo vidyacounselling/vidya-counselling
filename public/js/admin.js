@@ -1,0 +1,18 @@
+'use strict';
+(()=>{const body=document.body, sidebar=document.getElementById('sidebar'),open=document.getElementById('open-sidebar'),overlay=document.querySelector('.sidebar-overlay');let restoreFocus=null;
+try{if(localStorage.getItem('vidya-sidebar')==='collapsed')body.classList.add('sidebar-collapsed')}catch{}
+const close=()=>{body.classList.remove('sidebar-open');if(overlay)overlay.hidden=true;if(open)open.setAttribute('aria-expanded','false');document.querySelector('.workspace')?.removeAttribute('inert');restoreFocus?.focus()};
+open?.addEventListener('click',()=>{restoreFocus=document.activeElement;body.classList.add('sidebar-open');overlay.hidden=false;open.setAttribute('aria-expanded','true');document.querySelector('.workspace')?.setAttribute('inert','');sidebar.querySelector('a,button')?.focus()});
+document.querySelectorAll('[data-sidebar-close]').forEach(e=>e.addEventListener('click',close));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&body.classList.contains('sidebar-open'))close();if(e.key==='Tab'&&body.classList.contains('sidebar-open')){const f=[...sidebar.querySelectorAll('a,button')].filter(e=>e.getClientRects().length);if(e.shiftKey&&document.activeElement===f[0]){e.preventDefault();f.at(-1).focus()}else if(!e.shiftKey&&document.activeElement===f.at(-1)){e.preventDefault();f[0].focus()}}});
+document.getElementById('collapse-sidebar')?.addEventListener('click',e=>{const collapsed=body.classList.toggle('sidebar-collapsed');e.currentTarget.setAttribute('aria-expanded',String(!collapsed));e.currentTarget.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');try{localStorage.setItem('vidya-sidebar',collapsed?'collapsed':'expanded')}catch{}});
+document.querySelectorAll('[data-toggle-password]').forEach(b=>b.addEventListener('click',()=>{const input=document.getElementById(b.dataset.togglePassword),visible=input.type==='password';input.type=visible?'text':'password';b.textContent=visible?'Hide':'Show';b.setAttribute('aria-pressed',String(visible));b.setAttribute('aria-label',(visible?'Hide ':'Show ')+input.name.replaceAll('_',' '))}));
+document.querySelector('[data-select-all]')?.addEventListener('change',e=>document.querySelectorAll('[form="bulk-posts"][type="checkbox"]').forEach(c=>c.checked=e.target.checked));
+let confirmed=null;const confirmation=document.getElementById('confirmation');
+document.querySelectorAll('form[data-confirm]').forEach(f=>f.addEventListener('submit',e=>{if(f.dataset.confirmed==='yes')return;e.preventDefault();confirmed=f;document.getElementById('confirm-message').textContent=f.dataset.confirm;confirmation.showModal()}));
+confirmation?.addEventListener('close',()=>{if(confirmation.returnValue==='confirm'&&confirmed){confirmed.dataset.confirmed='yes';confirmed.requestSubmit()}confirmed=null});
+document.querySelectorAll('[data-close-dialog]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
+let dirty=false;document.querySelectorAll('form[data-dirty]').forEach(f=>{f.addEventListener('input',()=>dirty=true);f.addEventListener('change',()=>dirty=true);f.addEventListener('submit',()=>{dirty=false})});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});window.vidyaMarkDirty=()=>dirty=true;
+document.querySelectorAll('form').forEach(f=>f.addEventListener('submit',e=>{if(e.defaultPrevented||f.hasAttribute('data-confirm')&&f.dataset.confirmed!=='yes'||f.id==='media-form')return;const button=e.submitter;if(button){button.setAttribute('aria-busy','true');setTimeout(()=>{button.disabled=true;button.textContent='Saving…'},0)}}));
+document.querySelector('.notice.error')?.focus();
+})();
