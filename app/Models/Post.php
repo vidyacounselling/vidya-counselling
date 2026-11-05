@@ -8,6 +8,7 @@ class Post extends Model
 {
     use SoftDeletes;
     protected $guarded = ['id'];
+    protected $attributes = ['version'=>1,'status'=>'draft','language'=>'en','schema_mode'=>'automatic'];
     protected function casts(): array { return ['published_at'=>'immutable_datetime','content_updated_at'=>'immutable_datetime','reviewed_at'=>'immutable_datetime','comments_enabled'=>'boolean','noindex'=>'boolean','nofollow'=>'boolean','version'=>'integer']; }
     public function author() { return $this->belongsTo(User::class, 'author_id')->withTrashed(); }
     public function category() { return $this->belongsTo(Category::class); }

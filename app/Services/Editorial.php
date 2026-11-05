@@ -43,6 +43,7 @@ class Editorial {
         if(mb_strlen(trim(strip_tags($p->body_html??'')))<30) $errors['body_html']='Add at least 30 characters of article text before publishing.';
         if(!$p->category_id) $errors['category_id']='Choose a primary category before publishing.';
         if($p->status==='scheduled' && (!$p->published_at || $p->published_at->lte(now()))) $errors['published_at']='Choose a future time in Asia/Kolkata for scheduled publication.';
+        if($p->status==='published' && $p->published_at?->gt(now())) $errors['published_at']='Use Scheduled for a future publication time.';
         if($p->media_id && !trim($p->media?->alt??'')) $errors['media_id']='Add meaningful alternative text to the featured image.';
         if($p->reviewer_name && !$p->reviewed_at) $errors['reviewed_at']='Record the actual review date, or clear the reviewer claim.';
         if($errors) throw ValidationException::withMessages($errors);

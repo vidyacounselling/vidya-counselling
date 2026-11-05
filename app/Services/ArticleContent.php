@@ -7,7 +7,7 @@ class ArticleContent
 {
     public function sanitize(string $html): string
     {
-        $config=(new HtmlSanitizerConfig())->allowSafeElements()
+        $config=(new HtmlSanitizerConfig())->withMaxInputLength(500000)->allowSafeElements()
             ->allowElement('h2',['id'])->allowElement('h3',['id'])->allowElement('h4',['id'])
             ->allowElement('figure',[])->allowElement('figcaption',[])->allowElement('hr',[])
             ->allowElement('img',['src','alt','width','height','loading'])
