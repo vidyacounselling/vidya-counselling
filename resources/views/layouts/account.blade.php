@@ -6,8 +6,8 @@
     <meta name="robots" content="noindex,nofollow,noarchive">
     <title>@yield('title') · Vidya Counselling Centre</title>
     <link rel="icon" type="image/png" href="{{ asset('images/vidya-logo.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/account.css') }}">
-    <script defer src="{{ asset('js/account.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/account.css') }}?v=editorial-20261105">
+    <script defer src="{{ asset('js/account.js') }}?v=editorial-20261105"></script>
 </head>
 <body>
 <main class="account-shell">
