@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo('/admin');
         $middleware->alias(['admin' => \App\Http\Middleware\RequireAdmin::class, 'staff' => \App\Http\Middleware\RequireStaff::class]);
         $middleware->validateCsrfTokens(except: ['register']);
-        $middleware->web(append: [\App\Http\Middleware\ProtectStaging::class]);
+        $middleware->web(append: [\App\Http\Middleware\ProtectStaging::class,\App\Http\Middleware\ReleaseHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['password', 'password_confirmation', 'setup_token']);

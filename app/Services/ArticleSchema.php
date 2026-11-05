@@ -18,8 +18,12 @@ class ArticleSchema {
             if(array_intersect($types,['Article','BlogPosting','NewsArticle'])) {
                 $articles++;
                 if(($node['headline']??null)!==$post->title) $this->fail('Article headline must match the visible title.');
-                $url=$node['url']??($node['mainEntityOfPage']['@id']??$node['mainEntityOfPage']??null);
+                $main=$node['mainEntityOfPage']??null;
+                $url=$node['url']??(is_array($main)?($main['@id']??null):$main);
                 if($url!==$post->canonical) $this->fail('Article URL must match the canonical URL.');
+                $author=$node['author']??null;
+                if(is_array($author)&&isset($author['name'])&&$author['name']!==$post->author->name)$this->fail('Schema author must match the stored article author.');
+                foreach(['datePublished'=>'published_at','dateModified'=>'content_updated_at'] as $property=>$field)if(isset($node[$property])&&$post->$field){try{$date=\Illuminate\Support\Carbon::parse($node[$property]);}catch(\Throwable){$this->fail('Use a valid ISO date for '.$property);}if(!$date->equalTo($post->$field))$this->fail($property.' must match the stored article date.');}
             }
             if(in_array('BreadcrumbList',$types,true)) $breadcrumbs++;
             if(isset($node['@id'])) { if(in_array($node['@id'],$ids,true)) $this->fail('Duplicate @id values are not allowed.'); $ids[]=$node['@id']; }
