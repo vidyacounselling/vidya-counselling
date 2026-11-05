@@ -1,0 +1,139 @@
+name: Remote PHP tests and release candidate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vidya-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-package:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-disposable-password
+          MYSQL_DATABASE: vidya_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -pci-disposable-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: http://localhost
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_DATABASE: vidya_test
+      DB_USERNAME: root
+      DB_PASSWORD: ci-disposable-password
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      STAGING_PROTECTION: 'false'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up remote PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: ctype, curl, dom, fileinfo, filter, gd, hash, mbstring, openssl, pcre, pdo_mysql, pdo_sqlite, session, tokenizer, xml, zip, pcntl
+          tools: composer:v2
+          coverage: none
+      - name: Resolve bootstrap lock or install committed lock
+        id: dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/evidence
+          php -v > build/evidence/php-version.txt
+          php -m > build/evidence/php-modules.txt
+          composer --version > build/evidence/composer-version.txt
+          if git ls-files --error-unmatch composer.lock >/dev/null 2>&1; then
+            echo 'locked=true' >> "$GITHUB_OUTPUT"
+            if ! composer validate --strict; then
+              composer update symfony/html-sanitizer --with-dependencies --no-interaction --prefer-dist
+            fi
+            composer validate --strict
+            composer install --no-interaction --prefer-dist
+          else
+            echo 'locked=false' >> "$GITHUB_OUTPUT"
+            composer update --no-interaction --prefer-dist
+            composer validate --strict
+          fi
+          composer audit --locked
+          find app bootstrap config database routes tests tools -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run isolated SQLite authentication tests
+        run: vendor/bin/phpunit --log-junit build/evidence/sqlite-tests.xml
+      - name: Run the same tests against isolated MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/ci-configure-mysql.py
+          vendor/bin/phpunit -c build/phpunit.mysql.xml --log-junit build/evidence/mysql-tests.xml
+      - name: Generate and replay-test additive previous-release upgrade SQL
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        shell: bash
+        run: bash tools/ci-upgrade.sh
+      - name: Exercise actual remote Blade UI at desktop, tablet and mobile widths
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+          DB_DATABASE: vidya_browser
+          SESSION_DRIVER: database
+          CACHE_STORE: database
+          APP_URL: http://127.0.0.1:8000
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "$MYSQL_CONTAINER" mysql -uroot -pci-disposable-password -e 'CREATE DATABASE vidya_browser CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+          php artisan migrate --force
+          php tools/ci-browser-fixtures.php
+          python3 -m pip install --target build/python-libs selenium
+          php artisan serve --host=127.0.0.1 --port=8000 > build/evidence/browser-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          for i in $(seq 1 20); do curl --fail --silent http://127.0.0.1:8000/login > /dev/null && break || sleep 1; done
+          PYTHONPATH=build/python-libs python3 tools/ci-browser.py
+      - name: Build production-dependency artifact from committed lock only
+        # Browser fixtures live only in a separate disposable CI database; never in artifacts.
+        # Production dependencies are installed only after tests and screenshots.
+        if: steps.dependencies.outputs.locked == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          composer check-platform-reqs --no-dev
+          python3 tools/build-release.py
+      - name: Save private build evidence and candidate files
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vidya-candidate-${{ github.sha }}
+          retention-days: 3
+          if-no-files-found: error
+          path: |
+            composer.lock
+            build/evidence/
+            build/upgrade-20261105.sql
+            build/release/
+      # Intentionally no Hostinger secrets, upload, deploy or auto-deployment step.
