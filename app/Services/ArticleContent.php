@@ -12,7 +12,7 @@ class ArticleContent
             ->allowElement('figure',[])->allowElement('figcaption',[])->allowElement('hr',[])
             ->allowElement('img',['src','alt','width','height','loading'])
             ->allowElement('a',['href','title','target','rel'])->allowLinkSchemes(['https','http','mailto'])
-            ->allowMediaSchemes(['https'])->allowRelativeMedias()->allowRelativeLinks()
+            ->allowMediaSchemes(['https','http'])->allowRelativeMedias()->allowRelativeLinks()
             ->forceAttribute('a','rel','nofollow noopener noreferrer')->forceAttribute('img','loading','lazy')
             ->dropElement('script')->dropElement('style')->dropElement('iframe')->dropElement('object')->dropElement('form')->dropElement('h1');
         $clean=(new HtmlSanitizer($config))->sanitize($html);

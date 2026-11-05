@@ -13,6 +13,7 @@ DB_DATABASE=vidya_import php artisan migrate --force --path=database/migrations/
 DB_DATABASE=vidya_import php artisan migrate --force --path=database/migrations/0001_01_01_000002_create_jobs_table.php
 DB_DATABASE=vidya_import php artisan migrate --force --path=database/migrations/2026_11_04_000001_create_admin_setup_table.php
 mysql_ci vidya_import -e "INSERT INTO users (id,name,email,password,is_admin,created_at,updated_at) VALUES (41,'Import owner','import-owner@example.test','test-only-preserved-hash',1,NOW(),NOW());"
+mysql_ci vidya_import -e 'UPDATE migrations SET batch=1;'
 mysql_ci vidya_import < build/upgrade-20261105.sql
 test "$(mysql_ci -N vidya_import -e "SELECT COUNT(*) FROM users WHERE id=41 AND password='test-only-preserved-hash' AND role='administrator' AND active=1")" = 1
 test "$(mysql_ci -N vidya_import -e 'SELECT COUNT(*) FROM migrations')" = 5
