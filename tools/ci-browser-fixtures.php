@@ -1,0 +1,9 @@
+<?php
+require __DIR__.'/../vendor/autoload.php';
+$app=require __DIR__.'/../bootstrap/app.php';$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+if(getenv('GITHUB_ACTIONS')!=='true'||getenv('DB_DATABASE')!=='vidya_browser')throw new RuntimeException('Disposable remote browser database only.');
+$u=\App\Models\User::create(['name'=>'Isolated browser administrator','email'=>'browser@example.test','password'=>'Isolated-Browser123!']);$u->forceFill(['role'=>'administrator','is_admin'=>true,'active'=>true,'bio'=>'Isolated UI fixture. Never deployed.'])->save();
+$c=\App\Models\Category::create(['name'=>'Perspectives','slug'=>'perspectives']);
+\App\Models\Tag::create(['name'=>'Reflection','slug'=>'reflection']);
+\App\Models\Post::create(['author_id'=>$u->id,'category_id'=>$c->id,'title'=>'A little space for a new perspective: a deliberately long editorial title','slug'=>'isolated-browser-article','excerpt'=>'An isolated fixture to inspect article typography and the complete editorial workflow. This content is never deployed.','body_html'=>'<h2 id="section-1">A thoughtful beginning</h2><p>This is isolated test content for visual verification. <strong>Emphasis</strong>, <em>careful thought</em> and <u>readable formatting</u> should remain clear.</p><h3 id="section-2">A second perspective</h3><blockquote>Make room for a useful conversation.</blockquote><ul><li>A clear first point</li><li>A little space to reflect</li></ul><h4 id="section-3">Moving forward</h4><p>मराठी मजकूर जतन होतो. This article checks real rendered content, not a mockup.</p>','status'=>'published','published_at'=>now()->subDay(),'content_updated_at'=>now()->subDay(),'comments_enabled'=>true]);
+\App\Models\Comment::create(['post_id'=>1,'name'=>'Isolated reader','email'=>'private-reader@example.test','body'=>'An isolated moderation fixture. Never deployed.','status'=>'pending']);

@@ -1,7 +1,8 @@
 @extends('layouts.admin')
 @section('title','Dashboard')
 @section('description','A clear view of your team, stories and conversations.')
-@section('actions')<a class="button primary" href="{{ route('blogs.create') }}"><x-icon name="plus"/>Add Blog</a>@if(auth()->user()->isAdministrator())<a class="button" href="{{ route('users.create') }}">Add User</a>@endif@endsection
+@section('actions')<a class="button primary" href="{{ route('blogs.create') }}"><x-icon name="plus"/>Add Blog</a>@if(auth()->user()->isAdministrator())<a class="button" href="{{ route('users.create') }}">Add User</a>@endif
+@endsection
 @section('content')
 <section class="welcome"><div><p class="eyebrow">YOUR CENTRE, AT A GLANCE</p><h2>Welcome, {{ explode(' ',auth()->user()->name)[0] }}.</h2><p>Make room for useful stories and meaningful conversations.</p></div><img src="{{ asset('images/vidya-logo.png') }}" alt="" width="110" height="110"></section>
 <div class="stat-grid">@foreach($counts as $label=>$count)<div class="stat"><span>{{ $label }}</span><strong>{{ number_format($count) }}</strong></div>@endforeach</div>

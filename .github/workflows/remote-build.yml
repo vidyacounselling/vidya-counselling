@@ -94,7 +94,28 @@ jobs:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         shell: bash
         run: bash tools/ci-upgrade.sh
+      - name: Exercise actual remote Blade UI at desktop, tablet and mobile widths
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+          DB_DATABASE: vidya_browser
+          SESSION_DRIVER: database
+          CACHE_STORE: database
+          APP_URL: http://127.0.0.1:8000
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "$MYSQL_CONTAINER" mysql -uroot -pci-disposable-password -e 'CREATE DATABASE vidya_browser CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+          php artisan migrate --force
+          php tools/ci-browser-fixtures.php
+          python3 -m pip install --target build/python-libs selenium
+          php artisan serve --host=127.0.0.1 --port=8000 > build/evidence/browser-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          for i in $(seq 1 20); do curl --fail --silent http://127.0.0.1:8000/login > /dev/null && break || sleep 1; done
+          PYTHONPATH=build/python-libs python3 tools/ci-browser.py
       - name: Build production-dependency artifact from committed lock only
+        # Browser fixtures live only in a separate disposable CI database; never in artifacts.
+        # Production dependencies are installed only after tests and screenshots.
         if: steps.dependencies.outputs.locked == 'true'
         shell: bash
         run: |
