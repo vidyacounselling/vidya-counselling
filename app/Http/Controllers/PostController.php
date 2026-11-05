@@ -18,14 +18,14 @@ class PostController extends Controller {
         if($r->filled('tag_id')) $q->whereHas('tags',fn($q)=>$q->where('tags.id',$r->tag_id));
         if(in_array($r->comments,['0','1'],true)) $q->where('comments_enabled',$r->comments);
         $date=$r->date_field==='published_at'?'published_at':'created_at';
-        foreach(['from'=>'>=','to'=>'<='] as $f=>$op) if($r->filled($f)&&preg_match('/^\d{4}-\d{2}-\d{2}$/',$r->$f)) $q->whereDate($date,$op,$r->$f);
+        \App\Services\DateFilters::apply($q,$r,$date);
         $sort=in_array($r->sort,['title','published_at','created_at','updated_at'],true)?$r->sort:'updated_at';
         return view('posts.index',$this->options()+['posts'=>$q->orderBy($sort,$r->direction==='asc'?'asc':'desc')->paginate(15)->withQueryString()]);
     }
-    private function options(): array { return ['categories'=>Category::orderBy('name')->get(),'tags'=>Tag::orderBy('name')->get(),'authors'=>User::where('active',true)->orderBy('name')->get(['id','name'])]; }
+    private function options(?Post $post=null): array { return ['categories'=>Category::orderBy('name')->get(),'tags'=>Tag::orderBy('name')->get(),'authors'=>User::withTrashed()->where(fn($q)=>$q->where(fn($q)=>$q->where('active',true)->whereNull('deleted_at'))->when($post,fn($q)=>$q->orWhere('id',$post->author_id)))->orderBy('name')->get(['id','name'])]; }
     public function create() { return view('posts.form',$this->options()+['post'=>new Post(['author_id'=>auth()->id(),'status'=>'draft','language'=>'en','schema_mode'=>'automatic']),'working'=>null]); }
     public function store(SavePostRequest $r,Editorial $editorial) { $p=$editorial->save(null,$r->validated(),$r->user()->id); return redirect()->route('blogs.edit',$p)->with('success','Post saved.'); }
-    public function edit(Post $blog) { Gate::authorize('update',$blog); return view('posts.form',$this->options()+['post'=>$blog->load(['tags','media','scripts']),'working'=>DB::table('post_working_copies')->where('post_id',$blog->id)->where('user_id',auth()->id())->first()]); }
+    public function edit(Post $blog) { Gate::authorize('update',$blog); return view('posts.form',$this->options($blog)+['post'=>$blog->load(['tags','media','scripts']),'working'=>DB::table('post_working_copies')->where('post_id',$blog->id)->where('user_id',auth()->id())->first()]); }
     public function update(SavePostRequest $r,Post $blog,Editorial $editorial) { Gate::authorize('update',$blog); $editorial->save($blog,$r->validated(),$r->user()->id); return redirect()->route('blogs.edit',$blog)->with('success','Changes saved.'); }
     public function show(Post $blog,ArticleSchema $schema) { Gate::authorize('view',$blog); try{$effective=$schema->effective($blog);}catch(\Illuminate\Validation\ValidationException $e){$effective=['source'=>'Invalid manual draft','data'=>$e->errors()];} return view('posts.show',['post'=>$blog->load(['author','category','tags','media','scripts']),'schema'=>$effective,'revisions'=>$blog->revisions()->latest()->limit(20)->get(),'pending'=>$blog->comments()->where('status','pending')->count()]); }
     public function destroy(Post $blog) { Gate::authorize('delete',$blog); $blog->delete(); Activity::record('Post moved to trash','Post #'.$blog->id); return redirect()->route('blogs.index')->with('success','Post moved to trash.'); }

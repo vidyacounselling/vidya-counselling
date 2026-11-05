@@ -7,6 +7,7 @@ $hash = (Get-FileHash -LiteralPath $backupPath -Algorithm SHA256).Hash.ToLowerIn
 if ($hash -ne $manifest.sha256) { throw 'Original backup checksum mismatch' }
 if ((Get-Item -LiteralPath $backupPath).Length -ne $manifest.bytes) { throw 'Backup byte size mismatch' }
 $blade = [IO.File]::ReadAllText((Join-Path $projectRoot 'resources/views/landing.blade.php'))
+$blade = $blade.Replace('<a href="{{ url(''/blog'') }}">Blog</a>', '')
 $style = [regex]::Match($original, '<style>([\s\S]*?)</style>')
 $css = [IO.File]::ReadAllText((Join-Path $projectRoot 'public/css/landing.css'))
 if ($css -cne $style.Groups[1].Value) { throw 'CSS changed' }

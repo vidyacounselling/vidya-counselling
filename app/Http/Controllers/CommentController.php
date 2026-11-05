@@ -15,7 +15,7 @@ class CommentController extends Controller {
         $q=Comment::with('post'); if(in_array($r->status,['pending','approved','spam','trash'],true)) $q->where('status',$r->status);
         if($r->filled('post_id')) $q->where('post_id',$r->post_id);
         if($r->filled('q')) { $s='%'.mb_substr($r->q,0,100).'%';$q->where(fn($q)=>$q->where('body','like',$s)->orWhere('name','like',$s)); }
-        foreach(['from'=>'>=','to'=>'<='] as $k=>$op) if($r->filled($k)&&preg_match('/^\d{4}-\d{2}-\d{2}$/',$r->$k)) $q->whereDate('created_at',$op,$r->$k);
+        \App\Services\DateFilters::apply($q,$r,'created_at');
         return view('comments.index',['comments'=>$q->latest()->paginate(20)->withQueryString()]);
     }
     public function moderate(Request $r) {

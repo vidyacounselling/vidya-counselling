@@ -13,11 +13,11 @@ class UserController extends Controller {
         elseif(in_array($r->status,['active','inactive'],true)) $q->where('active',$r->status==='active');
         if($r->filled('q')) $q->where(fn($s)=>$s->where('name','like','%'.mb_substr($r->q,0,100).'%')->orWhere('email','like','%'.mb_substr($r->q,0,100).'%'));
         if(in_array($r->role,['administrator','editor'],true)) $q->where('role',$r->role);
-        foreach(['from'=>'>=','to'=>'<='] as $key=>$op) if($r->filled($key)&&preg_match('/^\d{4}-\d{2}-\d{2}$/',$r->$key)) $q->whereDate('created_at',$op,$r->$key);
+        \App\Services\DateFilters::apply($q,$r,'created_at');
         $sort=in_array($r->sort,['name','email','role','created_at'],true)?$r->sort:'created_at';
         return view('users.index',['users'=>$q->orderBy($sort,$r->direction==='asc'?'asc':'desc')->paginate(15)->withQueryString()]);
     }
-    public function create() { return view('users.form',['user'=>new User(['active'=>true,'role'=>'editor'])]); }
+    public function create() { return view('users.form',['user'=>(new User)->forceFill(['active'=>true,'role'=>'editor'])]); }
     public function store(SaveUserRequest $r,StaffAccounts $service) { $u=$service->save($r->user(),null,$r->validated()); return redirect()->route('users.show',$u)->with('success','Staff account created. Share credentials through your approved private channel.'); }
     public function show(User $user) { return view('users.show',['user'=>$user->loadCount('posts'),'posts'=>$user->posts()->latest()->limit(5)->get()]); }
     public function edit(User $user) { return view('users.form',compact('user')); }

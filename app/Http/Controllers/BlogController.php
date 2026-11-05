@@ -26,5 +26,5 @@ class BlogController extends Controller {
         $response=response()->view('blog.show',compact('post','preview','related','comments','toc','schema'))->header('Cache-Control','private, no-store')->header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'");
         if($preview) $response->header('X-Robots-Tag','noindex, nofollow, noarchive'); return $response;
     }
-    public function sitemap() { $posts=Post::eligible()->where('noindex',false)->get()->filter(fn($p)=>$p->canonical===$p->public_url); return response()->view('blog.sitemap',compact('posts'))->header('Content-Type','application/xml; charset=UTF-8')->header('Cache-Control','no-cache'); }
+    public function sitemap() { $posts=Post::eligible()->where('noindex',false)->orderBy('id')->cursor()->filter(fn($p)=>$p->canonical===$p->public_url); return response()->view('blog.sitemap',compact('posts'))->header('Content-Type','application/xml; charset=UTF-8')->header('Cache-Control','no-cache'); }
 }
