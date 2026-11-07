@@ -34,7 +34,7 @@
 @foreach($destinations as $page)<option value="{{ $page->id }}">{{ ucfirst($page->kind) }} · {{ $page->title }}</option>
 @endforeach</select></label><button class="button">Suggest drafts</button></form>
 @endif
-<p class="hint">{{ $items->total() }} matching record(s)</p><section class="card table-card"><div class="table-scroll"><table><thead><tr><th>Content</th><th>Status</th><th>Order / details</th><th>Updated</th><th>Actions</th></tr></thead><tbody>
+<p class="hint">{{ $items->total() }} matching record(s)</p><section class="card table-card"><div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable records table"><table><thead><tr><th>Content</th><th>Status</th><th>Order / details</th><th>Updated</th><th>Actions</th></tr></thead><tbody>
 @forelse($items as $item)<tr><td><strong>{{ $item->name??$item->title??$item->question??$item->public_name }}</strong>
 @if($kind==='reviews-admin')<p class="muted">{{ \Illuminate\Support\Str::limit($item->original_text,100) }}</p>
 @endif 
