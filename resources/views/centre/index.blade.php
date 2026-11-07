@@ -1,0 +1,55 @@
+
+@extends('layouts.admin')
+@section('title',$title)
+@section('description','Manage accurate, approved content. Archived records can be recovered.')
+@php($routeKind=$kind==='services'?'services-admin':$kind)
+@section('actions')<a class="button primary" href="{{ route($routeKind.'.create') }}">Add {{ $title }}</a>
+@endsection
+@section('content')
+<form class="filters card" method="get"><label>Search<input name="q" value="{{ request('q') }}" maxlength="100" placeholder="Title, question or review text"></label><label>Status<select name="status"><option value="">All current</option>
+@foreach(($kind==='reviews-admin'?['pending','approved','rejected','spam','trash']:($kind==='stories'?['draft','published','archived','trash']:['draft','published','archived'])) as $state)<option 
+@selected(request('status')===$state)>{{ $state }}</option>
+@endforeach</select></label>
+@if(isset($destinations))<label>Page<select name="page_id"><option value="">All destinations</option>
+@foreach($destinations as $page)<option value="{{ $page->id }}" 
+@selected(request('page_id')==$page->id)>{{ ucfirst($page->kind) }} · {{ $page->title }}</option>
+@endforeach</select></label><label>Category<input name="category" value="{{ request('category') }}"></label>
+@endif
+@if($kind==='stories')<label>Consent<select name="consent"><option value="">Any consent</option>
+@foreach(['pending','approved','withdrawn'] as $state)<option 
+@selected(request('consent')===$state)>{{ $state }}</option>
+@endforeach</select></label>
+@endif 
+@if($kind==='reviews-admin')<label>Source<select name="source"><option value="">Any source</option><option 
+@selected(request('source')==='website')>website</option><option 
+@selected(request('source')==='admin')>admin</option></select></label><label>Rating<select name="rating"><option value="">Any rating</option>
+@foreach(range(1,5) as $n)<option 
+@selected(request('rating')==$n)>{{ $n }}</option>
+@endforeach</select></label><label>Service<select name="service_id"><option value="">Any service</option>
+@foreach(\App\Models\Service::orderBy('name')->get() as $s)<option value="{{ $s->id }}" 
+@selected(request('service_id')==$s->id)>{{ $s->name }}</option>
+@endforeach</select></label><label>From (IST)<input type="date" name="from" value="{{ request('from') }}"></label><label>To (IST)<input type="date" name="to" value="{{ request('to') }}"></label>
+@endif<button class="button">Apply filters</button><a href="{{ route($routeKind.'.index') }}">Reset</a></form>
+@if(isset($destinations))<form method="get" action="{{ route('faqs.generate') }}" class="card inline-fields"><div><h2>Template draft helper</h2><p class="muted">Creates editable drafts from page facts. No AI API, fees or automatic publishing. Skip unsupported answers.</p></div><label>Target page<select name="page_id" required><option value="">Choose a page</option>
+@foreach($destinations as $page)<option value="{{ $page->id }}">{{ ucfirst($page->kind) }} · {{ $page->title }}</option>
+@endforeach</select></label><button class="button">Suggest drafts</button></form>
+@endif
+<p class="hint">{{ $items->total() }} matching record(s)</p><section class="card table-card"><div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable records table"><table><thead><tr><th>Content</th><th>Status</th><th>Order / details</th><th>Updated</th><th>Actions</th></tr></thead><tbody>
+@forelse($items as $item)<tr><td><strong>{{ $item->name??$item->title??$item->question??$item->public_name }}</strong>
+@if($kind==='reviews-admin')<p class="muted">{{ \Illuminate\Support\Str::limit($item->original_text,100) }}</p>
+@endif 
+@if($kind==='stories')<small>Consent: {{ $item->consent_status }}</small>
+@endif</td><td><span class="badge">{{ $item->trashed()?'trash':$item->status }}</span></td><td>{{ $item->display_order??($item->pages_count.' page(s)') }} 
+@if($item->featured) · Featured 
+@endif</td><td>{{ $item->updated_at?->timezone('Asia/Kolkata')->format('d M Y, H:i') }} IST</td><td><div class="row-actions">
+@if($item->trashed())<form method="post" action="{{ route($routeKind.'.restore',$item->id) }}">
+@csrf<button class="button small">Restore as {{ $kind==='reviews-admin'?'pending':'draft' }}</button></form>
+@else<a href="{{ route($routeKind.'.show',$item->id) }}">View</a><a href="{{ route($routeKind.'.edit',$item->id) }}">Edit</a>
+@if($kind==='services'&&$item->isPublic())<a href="{{ $item->public_url }}" target="_blank" rel="noopener">Public ↗</a>
+@endif<form method="post" action="{{ route($routeKind.'.destroy',$item->id) }}" data-confirm="Archive this item? It will be hidden publicly and can be restored.">
+@csrf 
+@method('DELETE')<button class="button small danger">Archive</button></form>
+@endif</div></td></tr>
+@empty<tr><td colspan="5"><div class="empty-state"><h2>No matching {{ strtolower($title) }}</h2><p>Create content or change the filters. No demonstration content is published.</p></div></td></tr>
+@endforelse</tbody></table></div>{{ $items->links() }}</section>
+@endsection

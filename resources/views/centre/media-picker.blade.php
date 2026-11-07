@@ -1,0 +1,4 @@
+
+@php($mediaName=$mediaName??'media_id')
+<x-centre-field :name="$mediaName" :label="$mediaLabel??'Image'" type="select" :value="$mediaValue??''" :options="[''=>'No image']+$media->mapWithKeys(fn($m)=>[$m->id=>$m->alt.' (#'.$m->id.')'])->all()" hint="Only approved, appropriately consented images. Alternative text is required on upload."/>
+<div class="centre-media-upload" data-media-upload data-target="{{ $mediaName }}"><label>Upload image<input type="file" accept="image/jpeg,image/png,image/webp"></label><label>Alternative text<input data-media-alt maxlength="255" placeholder="Describe the image meaningfully"></label><button class="button" type="button">Upload and select</button><p class="hint" role="status">JPEG, PNG or WebP; maximum 5 MB and 12 megapixels. Images are re-encoded and metadata removed.</p></div>

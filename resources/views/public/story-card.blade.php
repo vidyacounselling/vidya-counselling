@@ -1,0 +1,3 @@
+<article class="quote-card">
+@if($story->media&&$story->media_consent)<img src="{{ $story->media->url }}" alt="{{ $story->media->alt }}" loading="lazy">
+@endif<span class="quote-mark" aria-hidden="true">“</span><h3>{{ $story->title }}</h3><blockquote>{{ $story->quotation }}</blockquote><div class="prose">{!! $story->story_html !!}</div><p><strong>{{ $story->public_name }}</strong></p></article>

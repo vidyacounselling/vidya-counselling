@@ -1,0 +1,24 @@
+
+@extends('layouts.public')
+@section('title','A space to be heard')
+@section('content')
+<section class="hero container"><div class="hero-copy"><p class="eyebrow"><span class="tiny-line"></span> COUNSELING, WITH CARE</p><h1>{{ $website['hero_title'] }}</h1><p class="hero-description">{{ $website['hero_description'] }}</p><div class="hero-actions"><a class="btn" href="{{ route('contact') }}">Request a Consultation <span aria-hidden="true">↗</span></a><a class="text-link" href="{{ route('services') }}">Explore our services →</a></div><div class="hero-footnote"><span class="small-seal" aria-hidden="true">✳</span><p>A thoughtful space for you.<br><strong>Supporting meaningful change since 2011.</strong></p></div></div><div class="hero-art" aria-hidden="true"><div class="art-sun"></div><div class="art-arch"><div class="art-path"></div><div class="art-leaf leaf-one"></div><div class="art-leaf leaf-two"></div><div class="art-leaf leaf-three"></div></div><span class="art-caption">ROOM TO GROW.<br>SPACE TO BE YOU.</span><span class="art-orbit">✳</span></div></section>
+<div class="values-strip"><div class="container"><span>A listening ear</span><i>✦</i><span>A fresh perspective</span><i>✦</i><span>Your own pace</span><i>✦</i><span>A meaningful next step</span></div></div>
+<section class="section container"><div class="section-heading split"><div><p class="eyebrow">HOW WE CAN HELP</p><h2>Support for where<br>you are right now.</h2></div><p>Life rarely follows a straight line. Explore a space for understanding, connection and thoughtful choices.</p></div>
+@include('public.service-cards')</section>
+<section class="story-band"><div class="container story-grid"><div class="story-mark" aria-hidden="true"><span>2011</span><p>A story rooted in care.<br>A purpose that continues.</p><div>✳</div></div><div><p class="eyebrow">THE HEART BEHIND VIDYA</p><h2>Built on a belief<br>that being heard matters.</h2><p>{{ $website['founder_intro'] }}</p><a class="text-link" href="{{ route('our-story') }}">Meet {{ $website['founder_name'] }} →</a></div></div></section>
+@if($stories->isNotEmpty()||$reviews->isNotEmpty())<section class="section container"><div class="section-heading"><p class="eyebrow">IN THEIR WORDS</p><h2>Stories shared with care.</h2><p>Personal experiences, shared with permission. Individual experiences vary.</p></div><div class="cards">
+@foreach($stories as $story)
+@include('public.story-card')
+@endforeach 
+@foreach($reviews as $review)
+@include('public.review-card')
+@endforeach</div></section>
+@endif
+@if($posts->isNotEmpty())<section class="section container"><div class="section-heading split"><div><p class="eyebrow">THOUGHTS TO TAKE WITH YOU</p><h2>A moment of perspective.</h2></div><a class="text-link" href="{{ route('blog.index') }}">Visit the journal →</a></div><div class="cards">
+@foreach($posts as $post)<article class="journal-card">
+@if($post->media)<a href="{{ $post->public_url }}"><img loading="lazy" src="{{ $post->media->url }}" alt="{{ $post->media->alt }}"></a>
+@endif<small>{{ $post->published_at->format('d M Y') }}</small><h3><a href="{{ $post->public_url }}">{{ $post->title }}</a></h3><p>{{ $post->description }}</p></article>
+@endforeach</div></section>
+@endif
+@endsection

@@ -1,0 +1,1 @@
+'use strict';document.querySelectorAll('form').forEach(form=>form.addEventListener('submit',event=>{if(!form.checkValidity())return;const button=event.submitter;if(button){button.setAttribute('aria-busy','true');setTimeout(()=>{button.disabled=true;button.textContent='Submitting…'},0)}}));
