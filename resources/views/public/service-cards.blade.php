@@ -1,1 +1,6 @@
-<div class="cards service-cards">@forelse($services as $s)<article class="service-card"><div class="service-symbol" aria-hidden="true">{{ ['✳','◎','♧'][$loop->index%3] }}</div><span class="card-number">{{ str_pad($loop->iteration,2,'0',STR_PAD_LEFT) }}</span>@if($s->media)<img loading="lazy" src="{{ $s->media->url }}" alt="{{ $s->media->alt }}">@endif<h3><a href="{{ $s->public_url }}">{{ $s->name }}</a></h3><p>{{ $s->summary }}</p><a class="text-link" href="{{ $s->public_url }}">Explore service <span aria-hidden="true">↗</span></a></article>@empty<p>Contact the centre to discuss the support you’re looking for.</p>@endforelse</div>
+<div class="cards service-cards">
+@forelse($services as $s)<article class="service-card"><div class="service-symbol" aria-hidden="true">{{ ['✳','◎','♧'][$loop->index%3] }}</div><span class="card-number">{{ str_pad($loop->iteration,2,'0',STR_PAD_LEFT) }}</span>
+@if($s->media)<img loading="lazy" src="{{ $s->media->url }}" alt="{{ $s->media->alt }}">
+@endif<h3><a href="{{ $s->public_url }}">{{ $s->name }}</a></h3><p>{{ $s->summary }}</p><a class="text-link" href="{{ $s->public_url }}">Explore service <span aria-hidden="true">↗</span></a></article>
+@empty<p>Contact the centre to discuss the support you’re looking for.</p>
+@endforelse</div>

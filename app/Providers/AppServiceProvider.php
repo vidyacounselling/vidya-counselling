@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::defaultView('components.pagination');
         foreach([\App\Models\Post::class,\App\Models\Service::class,\App\Models\Category::class,\App\Models\Tag::class] as $model){$model::saved(fn($m)=>app(\App\Services\PageRegistry::class)->sync($m));$model::deleted(fn($m)=>app(\App\Services\PageRegistry::class)->sync($m));}
-        \Illuminate\Support\Facades\View::composer('layouts.public',function($view){$registry=app(\App\Services\PageRegistry::class);$page=$registry->current();$settings=app(\App\Services\WebsiteSettings::class)->all();$view->with(['website'=>$settings,'brandLogo'=>\App\Models\Media::find($settings['logo_media_id']??null),'socialImage'=>\App\Models\Media::find($settings['default_social_image']??null),'currentPublicPage'=>$page,'assignedFaqs'=>$registry->faqs($page)]);});
+        \Illuminate\Support\Facades\View::composer(['layouts.public','public.*'],function($view){$registry=app(\App\Services\PageRegistry::class);$page=$registry->current();$settings=app(\App\Services\WebsiteSettings::class)->all();$view->with(['website'=>$settings,'brandLogo'=>\App\Models\Media::find($settings['logo_media_id']??null),'socialImage'=>\App\Models\Media::find($settings['default_social_image']??null),'currentPublicPage'=>$page,'assignedFaqs'=>$registry->faqs($page)]);});
         RateLimiter::for('inquiries',fn(Request $r)=>Limit::perMinute(5)->by('inquiries:'.$r->ip()));
         RateLimiter::for('reviews',fn(Request $r)=>Limit::perMinute(3)->by('reviews:'.$r->ip()));
         RateLimiter::for('comments', fn (Request $r) => Limit::perMinute(3)->by('comment:'.$r->ip()));

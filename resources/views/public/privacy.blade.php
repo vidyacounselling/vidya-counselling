@@ -1,3 +1,4 @@
+
 @extends('layouts.public')
 @section('title','Privacy')
 @section('content')
