@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [\App\Http\Middleware\ProtectStaging::class,\App\Http\Middleware\ReleaseHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['password', 'password_confirmation', 'setup_token']);
+        $exceptions->dontFlash(['password', 'password_confirmation', 'setup_token', 'full_name', 'email', 'mobile', 'message', 'preferred_window', 'note', 'private_notes', 'moderation_notes']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

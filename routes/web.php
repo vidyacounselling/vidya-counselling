@@ -1,12 +1,41 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{AuthController,AdminController,UserController,PostController,TaxonomyController,MediaController,CommentController,ScriptController,BlogController};
-Route::view('/','landing')->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class,\Illuminate\View\Middleware\ShareErrorsFromSession::class,\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])->name('home');
+Route::get('/',[\App\Http\Controllers\CentreController::class,'home'])->name('home');
+Route::get('/services',[\App\Http\Controllers\CentreController::class,'services'])->name('services');
+Route::get('/services/{slug}',[\App\Http\Controllers\CentreController::class,'service'])->name('service');
+Route::get('/our-story',[\App\Http\Controllers\CentreController::class,'story'])->name('our-story');
+Route::get('/client-stories',[\App\Http\Controllers\CentreController::class,'stories'])->name('client-stories');
+Route::get('/reviews',[\App\Http\Controllers\CentreController::class,'reviews'])->name('reviews');
+Route::post('/reviews',[\App\Http\Controllers\ReviewController::class,'submit'])->middleware('throttle:reviews')->name('reviews.submit');
+Route::get('/contact',[\App\Http\Controllers\CentreController::class,'contact'])->name('contact');
+Route::post('/consultation',[\App\Http\Controllers\InquiryController::class,'store'])->middleware('throttle:inquiries')->name('consultation.submit');
+Route::get('/privacy',[\App\Http\Controllers\CentreController::class,'privacy'])->name('privacy');
 Route::any('/register',fn()=>abort(404))->name('register');
 Route::middleware('guest')->group(function(){Route::get('/login',[AuthController::class,'show'])->name('login');Route::post('/login',[AuthController::class,'login'])->middleware('throttle:login');});
 Route::post('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
 Route::middleware(['auth','staff'])->prefix('admin')->group(function(){
  Route::get('/',AdminController::class)->name('admin');
+ Route::post('/services/reorder',[\App\Http\Controllers\ServiceController::class,'reorder'])->name('services-admin.reorder');
+ Route::post('/services/{service}/restore',[\App\Http\Controllers\ServiceController::class,'restore'])->name('services-admin.restore');
+ Route::get('/services/{service}/preview',[\App\Http\Controllers\ServiceController::class,'preview'])->name('services-admin.preview');
+ Route::resource('services',\App\Http\Controllers\ServiceController::class)->names('services-admin');
+ Route::get('/faqs/draft-helper',[\App\Http\Controllers\FaqController::class,'generate'])->name('faqs.generate');
+ Route::post('/faqs/draft-helper',[\App\Http\Controllers\FaqController::class,'acceptDrafts'])->name('faqs.accept');
+ Route::post('/faqs/{faq}/restore',[\App\Http\Controllers\FaqController::class,'restore'])->name('faqs.restore');
+ Route::resource('faqs',\App\Http\Controllers\FaqController::class);
+ Route::resource('inquiries',\App\Http\Controllers\InquiryController::class)->only(['index','show','update','destroy']);
+ Route::middleware('admin')->group(function(){
+ Route::post('/inquiries/{inquiry}/restore',[\App\Http\Controllers\InquiryController::class,'restore'])->name('inquiries.restore');
+ Route::post('/inquiries/{inquiry}/redact',[\App\Http\Controllers\InquiryController::class,'redact'])->name('inquiries.redact');
+ Route::post('/stories/{story}/restore',[\App\Http\Controllers\StoryController::class,'restore'])->name('stories.restore');
+ Route::resource('stories',\App\Http\Controllers\StoryController::class);
+ Route::post('/reviews/{review}/restore',[\App\Http\Controllers\ReviewController::class,'restore'])->name('reviews-admin.restore');
+ Route::resource('reviews',\App\Http\Controllers\ReviewController::class)->names('reviews-admin');
+ Route::get('/website',[\App\Http\Controllers\WebsiteController::class,'edit'])->name('website.edit');
+ Route::put('/website',[\App\Http\Controllers\WebsiteController::class,'update'])->name('website.update');
+ });
+
  Route::middleware('admin')->group(function(){Route::post('/users/{user}/restore',[UserController::class,'restore'])->name('users.restore');Route::resource('users',UserController::class);Route::post('/blogs/{blog}/scripts',[ScriptController::class,'save'])->name('scripts.save');Route::post('/scripts/disable',[ScriptController::class,'disable'])->name('scripts.disable');});
  Route::post('/blogs/bulk',[PostController::class,'bulk'])->name('blogs.bulk');
  Route::post('/blogs/{blog}/restore',[PostController::class,'restore'])->name('blogs.restore');

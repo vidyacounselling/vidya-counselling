@@ -19,7 +19,7 @@ class MediaController extends Controller {
         return response()->json(['id'=>$m->id,'url'=>$m->url,'alt'=>$m->alt,'caption'=>$m->caption,'width'=>$width,'height'=>$height],201);
     }
     public function show(Request $r,string $filename) { abort_unless(preg_match('/^[a-f0-9]{40}\.(jpg|png|webp)$/',$filename),404); $m=Media::where('filename',$filename)->firstOrFail();
-        if(!auth()->user()?->isStaff()) { $used=\App\Models\Post::eligible()->where(fn($q)=>$q->where('media_id',$m->id)->orWhere('body_html','like','%/media/'.$filename.'%'))->exists(); abort_unless($used,404); }
+        if(!auth()->user()?->isStaff()) { $used=\App\Models\Post::eligible()->where(fn($q)=>$q->where('media_id',$m->id)->orWhere('body_html','like','%/media/'.$filename.'%'))->exists(); if(!$used)$used=\App\Models\Service::eligible()->where(fn($q)=>$q->where('media_id',$m->id)->orWhere('body_html','like','%/media/'.$filename.'%'))->exists();if(!$used)$used=\App\Models\ClientStory::eligible()->where('media_id',$m->id)->where('media_consent',true)->exists();if(!$used)$used=in_array((string)$m->id,array_intersect_key(app(\App\Services\WebsiteSettings::class)->all(),array_flip(['founder_media_id','logo_media_id','default_social_image'])),true);abort_unless($used,404); }
         $path=Storage::disk('local')->path('blog-media/'.$filename); if(in_array($r->integer('w'),[640,1200],true)&&is_file($path.'.w'.$r->integer('w')))$path.='.w'.$r->integer('w'); abort_unless(is_file($path),404);
         return response()->file($path,['Content-Type'=>$m->mime,'X-Content-Type-Options'=>'nosniff','Cache-Control'=>'private, max-age=60']);
     }

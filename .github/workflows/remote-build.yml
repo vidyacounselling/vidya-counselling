@@ -134,6 +134,6 @@ jobs:
           path: |
             composer.lock
             build/evidence/
-            build/upgrade-20261105.sql
+            build/upgrade-20261107.sql
             build/release/
       # Intentionally no Hostinger secrets, upload, deploy or auto-deployment step.

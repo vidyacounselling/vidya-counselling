@@ -20,6 +20,7 @@ class User extends Authenticatable
     public function isAdministrator(): bool { return $this->role === 'administrator' && $this->active && ! $this->trashed(); }
     public function isStaff(): bool { return $this->active && ! $this->trashed() && in_array($this->role, ['administrator','editor'], true); }
     public function posts() { return $this->hasMany(Post::class, 'author_id'); }
+    public function canManageInquiries(): bool { return $this->isStaff() && ($this->isAdministrator() || (bool)$this->can_manage_inquiries); }
 
     /**
      * Get the attributes that should be cast.
@@ -33,6 +34,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'active' => 'boolean',
+            'can_manage_inquiries' => 'boolean',
             'last_login_at' => 'datetime',
         ];
     }

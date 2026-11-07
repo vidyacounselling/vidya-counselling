@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow,noarchive">
-    <title>@yield('title') · Vidya Counselling Centre</title>
+    <title>@yield('title') · Vidya Counseling Centre</title>
     <link rel="icon" type="image/png" href="{{ asset('images/vidya-logo.png') }}">
     <link rel="stylesheet" href="{{ asset('css/account.css') }}?v=editorial-20261105">
     <script defer src="{{ asset('js/account.js') }}?v=editorial-20261105"></script>

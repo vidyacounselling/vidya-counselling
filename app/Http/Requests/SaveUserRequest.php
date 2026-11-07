@@ -9,5 +9,5 @@ class SaveUserRequest extends FormRequest {
         'name'=>['required','string','max:120'],'email'=>['required','email','max:254',Rule::unique('users')->ignore($this->route('user')?->id)],
         'password'=>[$this->isMethod('POST')?'required':'nullable','string','min:12','max:128','confirmed'],
         'role'=>['required',Rule::in(['administrator','editor'])],'active'=>['required','boolean'],
-        'bio'=>['nullable','string','max:3000'],'credentials'=>['nullable','string','max:255']]; }
+        'can_manage_inquiries'=>['nullable','boolean'],'bio'=>['nullable','string','max:3000'],'credentials'=>['nullable','string','max:255']]; }
 }

@@ -38,7 +38,7 @@ class ArticleSchema {
             ['@type'=>'ListItem','position'=>1,'name'=>'Home','item'=>url('/')],['@type'=>'ListItem','position'=>2,'name'=>'Blog','item'=>url('/blog')],['@type'=>'ListItem','position'=>3,'name'=>$post->title,'item'=>$post->canonical]]];
         if($manual) { $nodes=$manual['@graph']??(array_is_list($manual)?$manual:[$manual]); $has=false; foreach($nodes as $node) if(in_array('BreadcrumbList',(array)($node['@type']??[]),true)) $has=true; return ['source'=>'Manual','data'=>$has?$manual:['@context'=>'https://schema.org','@graph'=>[...$nodes,$breadcrumb]]]; }
         $data=['@context'=>'https://schema.org','@type'=>'BlogPosting','@id'=>$post->canonical.'#article','headline'=>$post->title,'description'=>$post->description,'url'=>$post->canonical,'mainEntityOfPage'=>['@type'=>'WebPage','@id'=>$post->canonical],
-            'author'=>['@type'=>'Person','name'=>$post->author->name],'publisher'=>['@type'=>'Organization','name'=>'Vidya Counselling Centre','url'=>url('/'),'logo'=>['@type'=>'ImageObject','url'=>asset('images/vidya-logo.png')]],'inLanguage'=>$post->language];
+            'author'=>['@type'=>'Person','name'=>$post->author->name],'publisher'=>['@type'=>'Organization','name'=>'Vidya Counseling Centre','url'=>url('/'),'logo'=>['@type'=>'ImageObject','url'=>asset('images/vidya-logo.png')]],'inLanguage'=>$post->language];
         if($post->published_at) $data['datePublished']=$post->published_at->toIso8601String();
         if($post->content_updated_at) $data['dateModified']=$post->content_updated_at->toIso8601String();
         if($post->media) $data['image']=[$post->media->url];

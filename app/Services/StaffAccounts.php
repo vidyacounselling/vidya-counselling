@@ -17,7 +17,7 @@ class StaffAccounts {
                 throw ValidationException::withMessages(['role'=>'Keep at least one active Administrator.']);
             if($trash) { $current->delete(); $action='Staff moved to trash'; }
             else {
-                foreach(['name','email','bio','credentials','role','active'] as $key) if(array_key_exists($key,$data)) $current->$key=$data[$key];
+                foreach(['name','email','bio','credentials','role','active','can_manage_inquiries'] as $key) if(array_key_exists($key,$data)) $current->$key=$data[$key];
                 $current->is_admin=$current->role==='administrator';
                 if(!empty($data['password'])) $current->password=Hash::make($data['password']);
                 $current->save(); $action='Staff account saved';
