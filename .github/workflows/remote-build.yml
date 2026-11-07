@@ -82,6 +82,11 @@ jobs:
           fi
           composer audit --locked
           find app bootstrap config database routes tests tools -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Compile and lint every Blade template
+        run: |
+          php artisan view:cache
+          find storage/framework/views -name '*.php' -print0 | xargs -0 -n1 php -l
+          php artisan view:clear
       - name: Run isolated SQLite authentication tests
         run: vendor/bin/phpunit --log-junit build/evidence/sqlite-tests.xml
       - name: Run the same tests against isolated MySQL

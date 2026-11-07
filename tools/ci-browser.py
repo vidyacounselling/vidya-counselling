@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 assert os.environ.get('GITHUB_ACTIONS')=='true'
 out=Path('build/evidence/browser');out.mkdir(parents=True,exist_ok=True)
 options=webdriver.ChromeOptions();options.add_argument('--headless=new');options.add_argument('--no-sandbox');options.add_argument('--disable-dev-shm-usage')
-driver=webdriver.Chrome(options=options);wait=WebDriverWait(driver,12);results=[]
+driver=webdriver.Chrome(options=options);wait=WebDriverWait(driver,12);results=[];overflows=[]
 def check(name,condition):
     assert condition,name
     results.append({'check':name,'pass':True})
@@ -17,8 +17,11 @@ def page(path,label,width=1440,height=1000):
     driver.set_window_size(width,height);driver.get('http://127.0.0.1:8000'+path)
     wait.until(lambda d:d.execute_script('return document.readyState')=='complete')
     check(label+'-renders',not ('Server Error' in driver.title or '500'==driver.title))
-    check(label+'-no-document-overflow',driver.execute_script('return document.documentElement.scrollWidth<=document.documentElement.clientWidth+1'))
     driver.save_screenshot(str(out/(label+'.png')))
+    if not driver.execute_script('return document.documentElement.scrollWidth<=document.documentElement.clientWidth+1'):
+        overflows.append({'page':label,'elements':driver.execute_script("return [...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>document.documentElement.clientWidth+1 && getComputedStyle(e).position!=='fixed').slice(0,12).map(e=>({tag:e.tagName,cls:e.className,width:e.getBoundingClientRect().width}))")})
+        print('OVERFLOW',json.dumps(overflows[-1]))
+    else:results.append({'check':label+'-no-document-overflow','pass':True})
 try:
     page('/login','login-desktop');driver.find_element(By.ID,'email').send_keys('browser@example.test');driver.find_element(By.ID,'password').send_keys('Isolated-Browser123!');driver.find_element(By.CSS_SELECTOR,'button[type=submit]').click();wait.until(EC.url_contains('/admin'))
     check('existing-login-reaches-dashboard','/admin' in driver.current_url)
@@ -100,5 +103,6 @@ try:
     wait.until(EC.url_contains('/edit'));check('r3-faq-save-reopens-editor',True)
     driver.get('http://127.0.0.1:8000/');check('r3-assigned-faq-actually-visible','An isolated browser FAQ?' in driver.find_element(By.TAG_NAME,'body').text)
     driver.save_screenshot(str(out/'r3-home-with-assigned-faq.png'))
+    check('all-requested-pages-fit-their-viewport',not overflows)
 finally:
     (out/'results.json').write_text(json.dumps(results,indent=2));driver.quit()
